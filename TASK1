@@ -1,0 +1,75 @@
+import tkinter as tk
+from tkinter import messagebox
+
+class Task:
+    def __init__(self, title, description=''):
+        self.title = title
+        self.description = description
+        self.is_completed = False
+
+    def __str__(self):
+        status = 'Completed' if self.is_completed else 'Pending'
+        return f"{self.title} - {self.description} [{status}]"
+
+class ToDoListApp(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("To-Do List Application")
+        self.geometry("400x400")
+        self.configure(bg='#E0FFFF')  # Very light blue background color
+
+        self.tasks = []
+
+        self.task_listbox = tk.Listbox(self)
+        self.task_listbox.pack(fill=tk.BOTH, expand=True)
+
+        self.add_task_entry = tk.Entry(self)
+        self.add_task_entry.pack()
+
+        self.add_task_button = tk.Button(self, text="Add Task", command=self.add_task, bg='pink')
+        self.add_task_button.pack()
+
+        self.remove_task_button = tk.Button(self, text="Remove Task", command=self.remove_task, bg='pink')
+        self.remove_task_button.pack()
+
+        self.update_task_button = tk.Button(self, text="Mark as Completed", command=self.update_task, bg='pink')
+        self.update_task_button.pack()
+
+        self.list_tasks_button = tk.Button(self, text="List Tasks", command=self.list_tasks, bg='pink')
+        self.list_tasks_button.pack()
+
+    def add_task(self):
+        title = self.add_task_entry.get()
+        if title:
+            task = Task(title)
+            self.tasks.append(task)
+            self.list_tasks()
+            self.add_task_entry.delete(0, tk.END)
+        else:
+            messagebox.showwarning("Input Error", "Task title cannot be empty.")
+
+    def remove_task(self):
+        selected_index = self.task_listbox.curselection()
+        if selected_index:
+            self.tasks.pop(selected_index[0])
+            self.list_tasks()
+        else:
+            messagebox.showwarning("Selection Error", "No task selected.")
+
+    def update_task(self):
+        selected_index = self.task_listbox.curselection()
+        if selected_index:
+            task = self.tasks[selected_index[0]]
+            task.is_completed = True
+            self.list_tasks()
+        else:
+            messagebox.showwarning("Selection Error", "No task selected.")
+
+    def list_tasks(self):
+        self.task_listbox.delete(0, tk.END)
+        for task in self.tasks:
+            self.task_listbox.insert(tk.END, str(task))
+
+if __name__ == "__main__":
+        app = ToDoListApp()
+        app.mainloop()
