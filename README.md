@@ -10,12 +10,7 @@ This repository serves as a comprehensive record of my progress and contribution
 
 The repository is structured as follows:
 
-├── Task_1/
-│ ├── README.md
-│ └── ...
+├── README.md
+├──Task_1/
 ├── Task_2/
-│ ├── README.md
-│ └── ...
 ├── Task_3/
-│ ├── README.md
-│ └── ...
