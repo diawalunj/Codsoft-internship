@@ -1,0 +1,156 @@
+import tkinter as tk
+from tkinter import messagebox
+import json
+
+CONTACTS_FILE = "contacts.json"
+
+def load_contacts():
+    try:
+        with open(CONTACTS_FILE, 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {}
+
+def save_contacts(contacts):
+    with open(CONTACTS_FILE, 'w') as file:
+        json.dump(contacts, file, indent=4)
+
+class ContactManagerApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Contact Manager")
+        self.root.configure(bg="#f5f5dc")
+
+        self.contacts = load_contacts()
+
+        self.name_label = tk.Label(root, text="Name:", bg="#f5f5dc", fg="#8b4513")
+        self.name_entry = tk.Entry(root, width=30)
+
+        self.phone_label = tk.Label(root, text="Phone:", bg="#f5f5dc", fg="#8b4513")
+        self.phone_entry = tk.Entry(root, width=30)
+
+        self.email_label = tk.Label(root, text="Email:", bg="#f5f5dc", fg="#8b4513")
+        self.email_entry = tk.Entry(root, width=30)
+
+        self.address_label = tk.Label(root, text="Address:", bg="#f5f5dc", fg="#8b4513")
+        self.address_entry = tk.Entry(root, width=30)
+
+        self.add_button = tk.Button(root, text="Add Contact", command=self.add_contact, bg="#8b4513", fg="#f5f5dc")
+        self.view_button = tk.Button(root, text="View Contacts", command=self.view_contacts, bg="#8b4513", fg="#f5f5dc")
+        self.search_button = tk.Button(root, text="Search Contact", command=self.search_contact, bg="#8b4513", fg="#f5f5dc")
+        self.update_button = tk.Button(root, text="Update Contact", command=self.update_contact, bg="#8b4513", fg="#f5f5dc")
+        self.delete_button = tk.Button(root, text="Delete Contact", command=self.delete_contact, bg="#8b4513", fg="#f5f5dc")
+
+        self.name_label.grid(row=0, column=0, padx=10, pady=10, sticky="e")
+        self.name_entry.grid(row=0, column=1, padx=10, pady=10)
+
+        self.phone_label.grid(row=1, column=0, padx=10, pady=10, sticky="e")
+        self.phone_entry.grid(row=1, column=1, padx=10, pady=10)
+
+        self.email_label.grid(row=2, column=0, padx=10, pady=10, sticky="e")
+        self.email_entry.grid(row=2, column=1, padx=10, pady=10)
+
+        self.address_label.grid(row=3, column=0, padx=10, pady=10, sticky="e")
+        self.address_entry.grid(row=3, column=1, padx=10, pady=10)
+
+        self.add_button.grid(row=4, column=0, columnspan=2, padx=10, pady=10)
+        self.view_button.grid(row=5, column=0, columnspan=2, padx=10, pady=10)
+        self.search_button.grid(row=6, column=0, columnspan=2, padx=10, pady=10)
+        self.update_button.grid(row=7, column=0, columnspan=2, padx=10, pady=10)
+        self.delete_button.grid(row=8, column=0, columnspan=2, padx=10, pady=10)
+
+    def add_contact(self):
+        name = self.name_entry.get().strip()
+        phone = self.phone_entry.get().strip()
+        email = self.email_entry.get().strip()
+        address = self.address_entry.get().strip()
+
+        if name and phone:
+            self.contacts[name] = {
+                "phone": phone,
+                "email": email,
+                "address": address
+            }
+            save_contacts(self.contacts)
+            messagebox.showinfo("Success", f"Contact '{name}' added successfully.")
+            self.clear_entries()
+        else:
+            messagebox.showwarning("Input Error", "Name and Phone are required.")
+
+    def view_contacts(self):
+        contacts_window = tk.Toplevel(self.root)
+        contacts_window.title("Contact List")
+        contacts_window.configure(bg="#f5f5dc")
+
+        if self.contacts:
+            row = 0
+            for name, details in self.contacts.items():
+                contact_label = tk.Label(contacts_window, text=f"{name}: {details['phone']}", bg="#f5f5dc", fg="#8b4513")
+                contact_label.grid(row=row, column=0, padx=10, pady=5, sticky="w")
+                row += 1
+        else:
+            tk.Label(contacts_window, text="No contacts found.", bg="#f5f5dc", fg="#8b4513").pack(pady=20)
+
+    def search_contact(self):
+        search_term = self.name_entry.get().strip()
+        if not search_term:
+            messagebox.showwarning("Input Error", "Please enter a name or phone number to search.")
+            return
+
+        found = False
+        for name, details in self.contacts.items():
+            if search_term.lower() in name.lower() or search_term in details['phone']:
+                self.name_entry.delete(0, tk.END)
+                self.phone_entry.delete(0, tk.END)
+                self.email_entry.delete(0, tk.END)
+                self.address_entry.delete(0, tk.END)
+
+                self.name_entry.insert(0, name)
+                self.phone_entry.insert(0, details['phone'])
+                self.email_entry.insert(0, details['email'])
+                self.address_entry.insert(0, details['address'])
+
+                found = True
+                break
+
+        if not found:
+            messagebox.showinfo("Not Found", "Contact not found.")
+
+    def update_contact(self):
+        name = self.name_entry.get().strip()
+        if name in self.contacts:
+            phone = self.phone_entry.get().strip()
+            email = self.email_entry.get().strip()
+            address = self.address_entry.get().strip()
+
+            self.contacts[name] = {
+                "phone": phone,
+                "email": email,
+                "address": address
+            }
+            save_contacts(self.contacts)
+            messagebox.showinfo("Success", f"Contact '{name}' updated successfully.")
+            self.clear_entries()
+        else:
+            messagebox.showwarning("Not Found", f"Contact '{name}' not found.")
+
+    def delete_contact(self):
+        name = self.name_entry.get().strip()
+        if name in self.contacts:
+            del self.contacts[name]
+            save_contacts(self.contacts)
+            messagebox.showinfo("Success", f"Contact '{name}' deleted successfully.")
+            self.clear_entries()
+        else:
+            messagebox.showwarning("Not Found", f"Contact '{name}' not found.")
+
+    def clear_entries(self):
+        self.name_entry.delete(0, tk.END)
+        self.phone_entry.delete(0, tk.END)
+        self.email_entry.delete(0, tk.END)
+        self.address_entry.delete(0, tk.END)
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = ContactManagerApp(root)
+    root.mainloop()
